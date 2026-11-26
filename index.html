@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090f1d">
+  <title>SecretPixel — Hide in Plain Sight</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="SecretPixel home">
+        <span class="brand-mark">S<span>✦</span></span>
+        <span><b>SecretPixel</b><small>HIDE IN PLAIN SIGHT</small></span>
+      </a>
+      <div class="side-label">WORKSPACE</div>
+      <nav class="nav">
+        <button class="nav-item active" data-page="hide"><span>▧</span> Hide a message</button>
+        <button class="nav-item" data-page="reveal"><span>⌕</span> Reveal a message</button>
+        <button class="nav-item" data-page="inspector"><span>◈</span> Image inspector</button>
+        <button class="nav-item" data-page="prank"><span>☻</span> Prank lab</button>
+        <button class="nav-item" data-page="learn"><span>⌘</span> How it works</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="local-note"><span class="dot"></span><div><b>Private by design</b><small>Your images stay in this browser.</small></div></div>
+        <small class="version">SECRETPixel · VERSION 1.0</small>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><span class="eyebrow">LOCAL IMAGE STEGANOGRAPHY</span><h1 id="page-title">Hide a secret message</h1></div>
+        <div class="top-status"><span class="dot"></span> Offline-ready · No account</div>
+      </header>
+
+      <section class="page active" id="page-hide">
+        <div class="intro"><p>Put a message inside an ordinary image. Share the PNG; the receiver can reveal it with SecretPixel.</p><span class="pill">LSB + optional AES-GCM</span></div>
+        <div class="work-grid">
+          <div class="panel">
+            <div class="panel-head"><div><span class="step">01</span><h2>Choose a cover image</h2></div><span class="muted tiny">PNG recommended</span></div>
+            <label class="upload-zone" for="cover-file" id="cover-drop">
+              <span class="upload-icon">＋</span><b>Choose an image</b><small>Click to browse · PNG, JPG, WebP</small>
+              <input type="file" id="cover-file" accept="image/png,image/jpeg,image/webp">
+            </label>
+            <div class="preview-wrap hidden" id="cover-preview-wrap">
+              <img id="cover-preview" alt="Selected cover image preview">
+              <div class="preview-meta"><b id="cover-name"></b><span id="cover-dimensions"></span></div>
+              <button class="text-button" id="remove-cover" type="button">Remove</button>
+            </div>
+            <div class="capacity"><span>Estimated message capacity</span><b id="capacity-value">Choose an image</b></div>
+            <div class="capacity-track"><span id="capacity-bar"></span></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div><span class="step">02</span><h2>Write your secret</h2></div><span class="muted tiny" id="char-count">0 / 10,000</span></div>
+            <textarea id="secret-text" maxlength="10000" placeholder="Type your secret message here…"></textarea>
+            <label class="check-row"><input type="checkbox" id="encrypt-toggle"><span><b>Password-protect this message</b><small>Encrypts the message with AES-GCM before hiding it.</small></span></label>
+            <div id="password-fields" class="password-fields hidden">
+              <label for="hide-password">Password</label><input type="password" id="hide-password" autocomplete="new-password" placeholder="At least 8 characters">
+              <label for="hide-password-confirm">Confirm password</label><input type="password" id="hide-password-confirm" autocomplete="new-password" placeholder="Type it again">
+            </div>
+            <button class="primary full" id="encode-btn" disabled>✦ Hide message in image</button>
+            <p class="feedback" id="encode-status" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="result-panel hidden" id="encode-result">
+          <div class="success-icon">✓</div><div class="result-copy"><b>Your secret image is ready</b><small id="encode-result-detail">Message embedded successfully.</small></div>
+          <button class="primary" id="download-stego">↓ Download PNG</button>
+        </div>
+        <p class="footnote">Tip: Share the generated PNG as a file/document. Messaging apps may compress images and damage hidden data.</p>
+      </section>
+
+      <section class="page" id="page-reveal">
+        <div class="intro"><p>Have a SecretPixel image? Upload the original PNG to recover its hidden message.</p><span class="pill">Reads SecretPixel v1 format</span></div>
+        <div class="panel narrow">
+          <div class="panel-head"><div><span class="step">01</span><h2>Select the stego image</h2></div></div>
+          <label class="upload-zone compact" for="stego-file"><span class="upload-icon">＋</span><b>Choose the PNG to scan</b><small>Use the original file, not a screenshot</small><input type="file" id="stego-file" accept="image/png,image/*"></label>
+          <div class="preview-wrap hidden" id="stego-preview-wrap"><img id="stego-preview" alt="Selected image"><div class="preview-meta"><b id="stego-name"></b><span id="stego-dimensions"></span></div></div>
+          <div id="reveal-password-wrap" class="password-fields hidden"><label for="reveal-password">Message password</label><input type="password" id="reveal-password" placeholder="Enter password if required"></div>
+          <button class="primary full" id="decode-btn" disabled>⌕ Scan and reveal</button>
+          <p class="feedback" id="decode-status" aria-live="polite"></p>
+          <div class="revealed hidden" id="revealed-box"><div class="revealed-head"><b>✦ Hidden message recovered</b><button class="text-button" id="copy-message">Copy</button></div><pre id="revealed-message"></pre></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-inspector">
+        <div class="intro"><p>Inspect an image's dimensions, format, file size and approximate SecretPixel capacity.</p><span class="pill">Image information</span></div>
+        <div class="panel narrow">
+          <label class="upload-zone compact" for="inspect-file"><span class="upload-icon">＋</span><b>Choose an image to inspect</b><small>Image is processed locally</small><input type="file" id="inspect-file" accept="image/*"></label>
+          <div id="inspect-results" class="stats-grid hidden">
+            <div class="stat"><small>Dimensions</small><b id="stat-dimensions">—</b></div>
+            <div class="stat"><small>File size</small><b id="stat-size">—</b></div>
+            <div class="stat"><small>Format</small><b id="stat-format">—</b></div>
+            <div class="stat"><small>Approx. capacity</small><b id="stat-capacity">—</b></div>
+          </div>
+          <p class="feedback" id="inspect-status"></p>
+        </div>
+      </section>
+
+      <section class="page" id="page-prank">
+        <div class="intro"><p>Pick a harmless semester-themed message, copy it, or send it straight to the Hide tab.</p><span class="pill">Just for laughs</span></div>
+        <div class="prank-grid" id="prank-grid">
+          <article class="prank-card"><span>🎓</span><small>SEMESTER SURVIVAL</small><h3>MISSION FAILED</h3><p>Congratulations! You survived 5th semester. Unfortunately, 6th semester is already loading. 💀</p><button class="secondary use-prank">Use this message</button></article>
+          <article class="prank-card"><span>🧠</span><small>SYSTEM DIAGNOSTIC</small><h3>Brain not found</h3><p>Student brain not detected. Please restart after vacation. 😂</p><button class="secondary use-prank">Use this message</button></article>
+          <article class="prank-card"><span>💸</span><small>PLACEMENT UPDATE</small><h3>Package unlocked</h3><p>5th semester completed. Salary package: 0 LPA. Sleep package: unlimited. 😴</p><button class="secondary use-prank">Use this message</button></article>
+          <article class="prank-card"><span>🕵️</span><small>TOP SECRET</small><h3>You found nothing</h3><p>If you're reading this, you have successfully wasted 30 seconds. Well done. 🫡</p><button class="secondary use-prank">Use this message</button></article>
+        </div>
+      </section>
+
+      <section class="page" id="page-learn">
+        <div class="intro"><p>A quick, friendly explanation of what happens behind the scenes.</p><span class="pill">Learn the basics</span></div>
+        <div class="panel narrow">
+          <h2>What is steganography?</h2>
+          <p class="body-copy">Steganography hides the existence of a message inside another file. SecretPixel uses the Least Significant Bit (LSB) technique: it changes the last bit of selected colour-channel values. These tiny changes are generally invisible to the eye.</p>
+          <h2>How SecretPixel works</h2>
+          <ol class="steps-list"><li>Choose an image and write a message.</li><li>Optionally encrypt the message using AES-GCM and a password-derived key.</li><li>SecretPixel writes a small format header and message bits into RGB pixel channels.</li><li>The receiver uploads the unchanged PNG and extracts the data.</li></ol>
+          <div class="warning"><b>Important limitations</b><p>Do not resize, crop, edit, screenshot, or send through services that recompress the image. These operations can destroy LSB data. Steganography is not a substitute for secure file transfer. Password protection encrypts message contents, but does not hide the fact that an image may contain data from forensic analysis.</p></div>
+          <h2>Privacy</h2><p class="body-copy">The app has no server, account, analytics, or database. Image processing happens in your browser. Do not use it to conceal illegal activity or share information without permission.</p>
+        </div>
+      </section>
+
+      <footer>SECRETPixel <span>·</span> Built for curious minds, not secret agents.</footer>
+    </main>
+  </div>
+  <script src="js/crypto.js"></script>
+  <script src="js/steganography.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
